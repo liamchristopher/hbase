@@ -59,14 +59,6 @@ pipeline {
     booleanParam(name: 'DEBUG', defaultValue: false, description: 'Produce a lot more meta-information.')
   }
   stages {
-    stage ('scm checkout') {
-      steps {
-        dir('component') {
-          checkout scm
-        }
-        stash name: 'component', includes: "component/*,component/**/*"
-      }
-    }
     stage ('yetus install') {
       steps {
         sh  '''#!/usr/bin/env bash
@@ -117,11 +109,11 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
     stage ('health checks') {
       parallel {
         stage ('yetus general check') {
-  agent {
-    node {
-      label 'Hadoop'
-    }
-  }
+          agent {
+            node {
+              label 'Hadoop'
+            }
+          }
           environment {
             // TODO does hadoopcheck need to be jdk specific?
             // Should be things that work with multijdk
@@ -134,7 +126,9 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
           steps {
             unstash 'yetus'
-            unstash 'component'
+            dir('component') {
+              checkout scm
+            }
             sh '''#!/usr/bin/env bash
               rm -rf "${OUTPUT_DIR}" && mkdir "${OUTPUT_DIR}"
               rm -rf "${OUTPUT_DIR}/machine" && mkdir "${OUTPUT_DIR}/machine"
@@ -172,11 +166,11 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
         }
         stage ('yetus jdk7 checks') {
-  agent {
-    node {
-      label 'Hadoop'
-    }
-  }
+          agent {
+            node {
+              label 'Hadoop'
+            }
+          }
           when {
             branch 'branch-1*'
           }
@@ -188,7 +182,9 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
           steps {
             unstash 'yetus'
-            unstash 'component'
+            dir('component') {
+              checkout scm
+            }
             sh '''#!/usr/bin/env bash
               rm -rf "${OUTPUT_DIR}" && mkdir "${OUTPUT_DIR}"
               rm -rf "${OUTPUT_DIR}/machine" && mkdir "${OUTPUT_DIR}/machine"
@@ -240,11 +236,11 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
         }
         stage ('yetus jdk8 hadoop2 checks') {
-  agent {
-    node {
-      label 'Hadoop'
-    }
-  }
+          agent {
+            node {
+              label 'Hadoop'
+            }
+          }
           environment {
             TESTS = 'mvninstall,compile,javac,unit,findbugs,htmlout'
             OUTPUT_DIR_RELATIVE = "${env.OUTPUT_DIR_RELATIVE_HADOOP2}"
@@ -255,7 +251,9 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
           steps {
             unstash 'yetus'
-            unstash 'component'
+            dir('component') {
+              checkout scm
+            }
             sh '''#!/usr/bin/env bash
               rm -rf "${OUTPUT_DIR}" && mkdir "${OUTPUT_DIR}"
               rm -rf "${OUTPUT_DIR}/machine" && mkdir "${OUTPUT_DIR}/machine"
@@ -307,11 +305,11 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
         }
         stage ('yetus jdk8 hadoop3 checks') {
-  agent {
-    node {
-      label 'Hadoop'
-    }
-  }
+          agent {
+            node {
+              label 'Hadoop'
+            }
+          }
           when {
             not {
               branch 'branch-1*'
@@ -329,7 +327,9 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
           steps {
             unstash 'yetus'
-            unstash 'component'
+            dir('component') {
+              checkout scm
+            }
             sh '''#!/usr/bin/env bash
               rm -rf "${OUTPUT_DIR}" && mkdir "${OUTPUT_DIR}"
               rm -rf "${OUTPUT_DIR}/machine" && mkdir "${OUTPUT_DIR}/machine"
@@ -401,6 +401,9 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
               rm -rf "output-srctarball/machine" && mkdir "output-srctarball/machine"
               "${BASEDIR}/dev-support/gather_machine_environment.sh" "output-srctarball/machine"
 '''
+            dir('component') {
+              checkout scm
+            }
             sh """#!/bin/bash -e
               if "${env.BASEDIR}/dev-support/hbase_nightly_source-artifact.sh" \
                   --intermediate-file-dir output-srctarball \
