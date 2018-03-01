@@ -120,8 +120,19 @@ public class ReplicationPeerManager {
     return desc;
   }
 
+  private void checkPeerInDAStateIfSyncReplication(String peerId) throws DoNotRetryIOException {
+    ReplicationPeerDescription desc = peers.get(peerId);
+    if (desc != null && desc.getPeerConfig().isSyncReplication()
+        && !SyncReplicationState.DOWNGRADE_ACTIVE.equals(desc.getSyncReplicationState())) {
+      throw new DoNotRetryIOException("Couldn't remove synchronous replication peer with state="
+          + desc.getSyncReplicationState()
+          + ", Transit the synchronous replication state to be DOWNGRADE_ACTIVE firstly.");
+    }
+  }
+
   public void preRemovePeer(String peerId) throws DoNotRetryIOException {
     checkPeerExists(peerId);
+    checkPeerInDAStateIfSyncReplication(peerId);
   }
 
   public void preEnablePeer(String peerId) throws DoNotRetryIOException {
