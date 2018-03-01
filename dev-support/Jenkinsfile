@@ -15,7 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 pipeline {
-  agent any
+  agent {
+    node {
+      label 'ubuntu'
+    }
+  }
   triggers {
     cron('@daily')
   }
