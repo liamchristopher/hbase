@@ -154,6 +154,7 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
           post {
             always {
+              stash name: 'general-result', includes: "${OUTPUT_DIR_RELATIVE}/commentfile"
               // Has to be relative to WORKSPACE.
               archive "${env.OUTPUT_DIR_RELATIVE}/*"
               archive "${env.OUTPUT_DIR_RELATIVE}/**/*"
@@ -209,6 +210,7 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
           post {
             always {
+              stash name: 'jdk7-result', includes: "${OUTPUT_DIR_RELATIVE}/commentfile"
               junit testResults: "${env.OUTPUT_DIR_RELATIVE}/**/target/**/TEST-*.xml", allowEmptyResults: true
               // zip surefire reports.
               sh '''#!/bin/bash -e
@@ -278,6 +280,7 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
           post {
             always {
+              stash name: 'hadoop2-result', includes: "${OUTPUT_DIR_RELATIVE}/commentfile"
               junit testResults: "${env.OUTPUT_DIR_RELATIVE}/**/target/**/TEST-*.xml", allowEmptyResults: true
               // zip surefire reports.
               sh '''#!/bin/bash -e
@@ -354,6 +357,7 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
           post {
             always {
+              stash name: 'hadoop3-result', includes: "${OUTPUT_DIR_RELATIVE}/commentfile"
               // Not sure how two junit test reports will work. Disabling this for now.
               // junit testResults: "${env.OUTPUT_DIR_RELATIVE}/**/target/**/TEST-*.xml", allowEmptyResults: true
               // zip surefire reports.
@@ -424,6 +428,7 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
           }
           post {
             always {
+              stash name: 'srctarball-result', includes: "output-srctarball/commentfile"
               archive 'output-srctarball/*'
             }
           }
@@ -435,6 +440,11 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
     always {
       script {
          try {
+           unstash 'general-result'
+           unstash 'jdk7-result'
+           unstash 'hadoop2-result'
+           unstash 'hadoop3-result'
+           unstash 'srctarball-result'
            sh "printenv"
            def results = ["${env.OUTPUT_DIR_RELATIVE_GENERAL}/commentfile",
                           "${env.OUTPUT_DIR_RELATIVE_JDK7}/commentfile",
