@@ -463,7 +463,7 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
               comment += "(x) *{color:red}-1 overall{color}*\n"
               // Ideally get the committer our of the change and @ mention them in the per-jira comment
            }
-           comment +=----\ndetails (if available):\n\n"
+           comment += "----\ndetails (if available):\n\n"
            echo ""
            echo "[DEBUG] trying to aggregate step-wise results"
            comment += results.collect { fileExists(file: it) ? readFile(file: it) : "" }.join("\n\n")
