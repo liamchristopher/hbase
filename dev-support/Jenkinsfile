@@ -110,6 +110,17 @@ curl -L  -o personality.sh "${env.PROJECT_PERSONALITY}"
         stash name: 'yetus', includes: "yetus-*/*,yetus-*/**/*,tools/personality.sh"
       }
     }
+    stage ('init health results') {
+      steps {
+        // stash with given name for all tests we might run, so that we can unstash all of them even if
+        // we skip some due to e.g. branch-specific JDK or Hadoop support
+        stash name: 'general-result', allowEmpty: true, includes: "${OUTPUT_DIR_RELATIVE_GENERAL}/doesn't-match"
+        stash name: 'jdk7-result', allowEmpty: true, includes: "${OUTPUT_DIR_RELATIVE_JDK7}/doesn't-match"
+        stash name: 'hadoop2-result', allowEmpty: true, includes: "${OUTPUT_DIR_RELATIVE_HADOOP2}/doesn't-match"
+        stash name: 'hadoop3-result', allowEmpty: true, includes: "${OUTPUT_DIR_RELATIVE_HADOOP3}/doesn't-match"
+        stash name: 'srctarball-result', allowEmpty: true, includes: "output-srctarball/doesn't-match"
+      }
+    }
     stage ('health checks') {
       parallel {
         stage ('yetus general check') {
